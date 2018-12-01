@@ -1,6 +1,9 @@
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const bcrypt = require('bcryptjs');
+const fs   = require('fs');
+const jwt   = require('jsonwebtoken');
+var auth = require('../controllers/auth');
 var UserSchema = new mongoose.Schema({
   email: {
     type: String,
@@ -20,27 +23,7 @@ var UserSchema = new mongoose.Schema({
   }
 });
 
-//authenticate input against database
-UserSchema.statics.authenticate = function (email, password, callback) {
-  User.findOne({ email: email })
-    .exec(function (err, user) {
-      if (err) {
-        return callback(err)
-      } else if (!user) {
-        var err = new Error('User not found.');
-        err.status = 401;
-        return callback(err);
-      }
-      bcrypt.compare(password, user.password, function (err, result) {
-        if (result === true) {
-          return callback(null, user);
-        } else {
-          return callback();
-        }
-      })
-    });
-}
-
+ 
 //hashing a password before saving it to the database
 UserSchema.pre('save', function (next) {
   var user = this;
@@ -54,10 +37,20 @@ UserSchema.pre('save', function (next) {
 });
 
 
-
-
 var User = mongoose.model('User', UserSchema);
-module.exports = User;
+
+//creating a token 
+var privateKEY  = fs.readFileSync('project/controllers/private.key', 'utf8');
+var publicKEY  = fs.readFileSync('project/controllers/public.key', 'utf8'); 
+// change secret to be more complicated 
+const secret = 'secret';
+async function createToken() {
+  let expirationDate = Math.floor(Date.now() / 1000) + 3600;
+  var token = jwt.sign({ userID: auth.createUser.email, exp: expirationDate}, secret);
+  return token;
+}
+module.exports.createToken = createToken;
+module.exports.secret = secret;
 
 
 
