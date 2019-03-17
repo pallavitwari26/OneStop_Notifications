@@ -1,3 +1,0 @@
-// CONFIGURATION FILE FOR APPLICATION
-
-module.exports.PORT = 3000;
