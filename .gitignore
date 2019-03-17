@@ -2,3 +2,4 @@ instance/config.py
 bin/
 include/
 lib/
+.Python
